@@ -1,40 +1,37 @@
-import React, { useState, useEffect } from 'react';
+// components/WeatherCard.js
+import React from 'react';
 
-const WeatherCard = () => {
-  const [weatherData, setWeatherData] = useState(null);
-
-  useEffect(() => {
-    const options = {
-      method: 'GET',
-      headers: {
-        accept: 'application/json',
-      },
-    };
-
-    fetch(
-      'https://api.tomorrow.io/v4/weather/forecast?location=42.3478,-71.0466&apikey=VanAVMlzvDr9u4SCh5q7zAR1m3IQYtKn',
-      options
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        console.log('Weather data:', data);
-        setWeatherData(data);
-      })
-      .catch((error) => {
-        console.error('Error fetching weather data:', error);
-      });
-  }, []); // Empty dependency array ensures the effect runs only once
-
+const WeatherCard = ({ location, weatherData }) => {
   return (
     <div className="weather-card">
-      <h2>Weather Information</h2>
-      {weatherData && weatherData.timelines && weatherData.timelines.hourly && (
-        <div>
-          <p>Temperature: {weatherData.timelines.hourly[0].temperature}</p>
-          <p>Humidity: {weatherData.timelines.hourly[0].humidity}</p>
-          {/* Add more weather data properties as needed */}
+      <div className="weather-card-header">
+        <h3 className="location">{location}</h3>
+        <div className="weather-icon">
+          <img
+            src={`http://openweathermap.org/img/w/${weatherData.weather[0].icon}.png`}
+            alt={weatherData.weather[0].description}
+          />
         </div>
-      )}
+      </div>
+      <div className="weather-card-body">
+        <div className="temperature">
+          <span className="value">{Math.round(weatherData.main.temp)}</span>
+          <span className="unit">°C</span>
+        </div>
+        <div className="weather-description">
+          <p>{weatherData.weather[0].description}</p>
+        </div>
+        <div className="weather-details">
+          <div className="detail">
+            <i className="fas fa-tint"></i>
+            <span>{weatherData.main.humidity}%</span>
+          </div>
+          <div className="detail">
+            <i className="fas fa-wind"></i>
+            <span>{weatherData.wind.speed} m/s</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
