@@ -58,78 +58,6 @@
 
 // export default App;
 
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import SearchBar from './components/SearchBar';
-import WeatherCard from './components/WeatherCard';
-import ForecastCard from './components/ForecastCard';
-import Loader from './components/Loader';
-import Layout from './components/Layout';
-
-const App = () => {
-  const [location, setLocation] = useState('');
-  const [weatherData, setWeatherData] = useState(null);
-  const [forecastData, setForecastData] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [showBackButton, setShowBackButton] = useState(false);
-
-  const handleSearch = async (city) => {
-    setIsLoading(true);
-    setShowBackButton(true);
-    try {
-      const weatherResponse = await axios.get(
-        `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${'6d2d14a469ad378aad0c974c9b5d85c3'}`
-      );
-      const forecastResponse = await axios.get(
-        `https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=metric&appid=${'6d2d14a469ad378aad0c974c9b5d85c3'}`
-      );
-      setWeatherData(weatherResponse.data);
-      setForecastData(forecastResponse.data.list);
-      setLocation(city);
-    } catch (error) {
-      setError('Error fetching weather data. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleBackButton = () => {
-    setWeatherData(null);
-    setForecastData([]);
-    setLocation('');
-    setShowBackButton(false);
-  };
-
-  return (
-    <Layout>
-      <div className="home-page">
-        {showBackButton && (
-          <button className="back-button" onClick={handleBackButton}>
-            <i className="fas fa-arrow-left"></i> Back
-          </button>
-        )}
-        <SearchBar onSearch={handleSearch} />
-        {isLoading ? (
-          <Loader />
-        ) : weatherData ? (
-          <div className="weather-container">
-            <WeatherCard location={location} weatherData={weatherData} />
-            <div className="forecast-container">
-              {forecastData.map((forecast, index) => (
-                <ForecastCard key={index} forecast={forecast} />
-              ))}
-            </div>
-          </div>
-        ) : (
-          <p>Please search for a location to see the weather.</p>
-        )}
-      </div>
-    </Layout>
-  );
-};
-
-export default App;
 // const api = {
 //   key: '6d2d14a469ad378aad0c974c9b5d85c3',
 //   base: 'https://api.openweathermap.org/data/2.5/',
@@ -173,3 +101,89 @@ export default App;
 //   );
 // }
 // export default App;
+
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import SearchBar from './components/SearchBar';
+import WeatherCard from './components/WeatherCard';
+import ForecastCard from './components/ForecastCard';
+import Loader from './components/Loader';
+import Layout from './components/Layout';
+
+const App = () => {
+  const [location, setLocation] = useState('');
+  const [weatherData, setWeatherData] = useState(null);
+  const [forecastData, setForecastData] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [showBackButton, setShowBackButton] = useState(false);
+
+  const handleSearch = async (city) => {
+    setIsLoading(true);
+    setShowBackButton(true);
+    try {
+      const weatherResponse = await axios.get(
+        `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=6d2d14a469ad378aad0c974c9b5d85c3`
+      );
+
+      const {
+        coord: { lat, lon },
+      } = weatherResponse.data;
+
+      const forecastResponse = await axios.get(
+        `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&appid=6d2d14a469ad378aad0c974c9b5d85c3`
+      );
+
+      console.log('Forecast Data:', forecastResponse.data.list); // Log the forecast data
+
+      setWeatherData(weatherResponse.data);
+      const sortedForecastData = forecastResponse.data.list.sort(
+        (a, b) => a.dt - b.dt
+      ); // Sort forecast data by date
+      setForecastData(sortedForecastData);
+      setLocation(city);
+      setError(null); // Reset error state
+    } catch (error) {
+      console.error('Error fetching data:', error); // Log the error
+      setError('Error fetching weather data. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleBackButton = () => {
+    setWeatherData(null);
+    setForecastData([]);
+    setLocation('');
+    setShowBackButton(false);
+  };
+
+  return (
+    <Layout>
+      <div className="home-page">
+        {showBackButton && (
+          <button className="back-button" onClick={handleBackButton}>
+            <i className="fas fa-arrow-left"></i> Back
+          </button>
+        )}
+        <SearchBar onSearch={handleSearch} />
+        {isLoading ? (
+          <Loader />
+        ) : weatherData ? (
+          <div className="weather-container">
+            <WeatherCard location={location} weatherData={weatherData} />
+            <div className="forecast-container">
+              {forecastData.slice(0, 5).map((forecast, index) => (
+                <ForecastCard key={index} forecast={forecast} />
+              ))}
+            </div>
+          </div>
+        ) : (
+          <p>Please search for a location to see the weather.</p>
+        )}
+      </div>
+    </Layout>
+  );
+};
+
+export default App;

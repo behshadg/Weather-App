@@ -1,12 +1,17 @@
-// components/ForecastCard.js
 import React from 'react';
 
 function ForecastCard({ forecast }) {
-  const forecastDate = new Date(forecast.dt_txt);
-  const formattedDate = `${forecastDate.toLocaleDateString('en-US', {
+  // Convert Unix timestamp to milliseconds
+  const forecastDate = new Date(forecast.dt * 1000);
+  // Extract date and time parts
+  const date = forecastDate.toLocaleDateString(undefined, {
     month: 'short',
     day: 'numeric',
-  })}`;
+  });
+  const time = forecastDate.toLocaleTimeString(undefined, {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 
   return (
     <div className="forecast-card">
@@ -17,7 +22,8 @@ function ForecastCard({ forecast }) {
         />
       </div>
       <div className="forecast-details">
-        <p className="forecast-date">{formattedDate}</p>
+        <p className="forecast-date">Date: {date}</p>
+        <p className="forecast-time">Time: {time}</p>
         <p className="forecast-temperature">
           {Math.round(forecast.main.temp)}°C
         </p>
